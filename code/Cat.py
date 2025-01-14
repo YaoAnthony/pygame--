@@ -28,6 +28,8 @@ class Cat(pygame.sprite.Sprite):
         self.frame_rate = cat_info.get("frame_rate", 2)  # 每帧间隔时间
         self.frame_index = 0
         self.status = "down_idle"
+
+        self.z = LAYERS["main"]
         # Default Settings
         
         self.animations = {

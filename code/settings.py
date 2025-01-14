@@ -1,3 +1,13 @@
+OVERLAY_POSITIONS = {
+
+}
+
+LAYERS = {
+    'background': 0,
+    'furniture': 1,
+    'main': 2,
+}
+
 class Settings:
     def __init__(self, config):
         self.language = config.get("language", "中文")
