@@ -2,9 +2,6 @@ import pygame,os,json,sys
 
 #Level
 from code.level import Level
-
-from code.settings import Settings
-from code.game_logic import GameLogic
 from code.ui_elements import UIManager
 from code.Button import Button
 
@@ -34,10 +31,6 @@ class Game:
         # 初始化 Pygame
         pygame.init()
 
-        # 加载配置文件
-        config = load_config()
-        settings = Settings(config)
-
         # 设置窗口
         info = pygame.display.Info()  # 获取屏幕分辨率
         screen_width = info.current_w  # 当前屏幕的宽度
@@ -54,12 +47,40 @@ class Game:
         #clock
         self.clock = pygame.time.Clock()
 
+        self.ui_manager = UIManager(self.screen)  # 实例化 UIManager
+        
+
         #Level
         self.level = Level()
 
         self.running = True
     
+    def show_start_screen(self):
+        """显示主菜单，处理用户点击"""
+        while True:
+            self.screen.fill((255, 228, 196))
+            self.ui_manager.draw_main_menu()  # 绘制主菜单
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    mouse_pos = pygame.mouse.get_pos()
+                    menu_option = self.ui_manager.handle_menu_click(mouse_pos)
+                    if menu_option == "开始游戏":
+                        return  # 退出主菜单，进入游戏循环
+                    elif menu_option == "设置":
+                        print("设置功能尚未实现")  # 可跳转到设置界面
+                    elif menu_option == "退出":
+                        pygame.quit()
+                        sys.exit()
+
+            pygame.display.flip()
+            self.clock.tick(60)
+    
     def run(self):
+        self.show_start_screen()  # 显示主菜单
         while self.running:
             # delta time
             dt = self.clock.tick(60) / 1000
@@ -73,4 +94,3 @@ class Game:
 if __name__ == "__main__":
     game = Game()
     game.run()
-    #main()

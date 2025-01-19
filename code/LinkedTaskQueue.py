@@ -23,7 +23,7 @@ class LinkedTaskQueue:
         task_id = self._generate_task_id()
         task_node = TaskNode(task_name, value)
         self.task_map[task_id] = task_node
-        print(f"任务 {task_id} 已添加: {task_node}")
+        #print(f"任务 {task_id} 已添加: {task_node}")
 
     def add_high_priority_task(self, task_name, value):
         """在开头插入高优先级任务"""

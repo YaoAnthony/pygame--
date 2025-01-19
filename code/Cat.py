@@ -1,8 +1,10 @@
 import pygame
+import random
 import os
 from code.LinkedTaskQueue import LinkedTaskQueue
 from code.settings import *
 from code.support import *
+from code.CatAnimation import CatAnimation
 
 class Cat(pygame.sprite.Sprite):
     '''
@@ -24,10 +26,17 @@ class Cat(pygame.sprite.Sprite):
         self.description = cat_info["description"]
         self.age = cat_info["age"]
 
+        self.hunger = cat_info.get("hunger", 100)
+        self.energy = cat_info.get("energy", 100)
+        self.hunger_rate = cat_info.get("hunger_rate", 1)
+
+
         self.size = cat_info.get("size", {"width": 64, "height": 64})  # 默认 64x64 尺寸
         self.frame_rate = cat_info.get("frame_rate", 2)  # 每帧间隔时间
         self.frame_index = 0
-        self.status = "down_idle"
+        self._status = "down_idle"
+
+        self._animation = CatAnimation(image_base_path, self.size, self.frame_rate)
 
         self.z = LAYERS["main"]
         # Default Settings
@@ -36,7 +45,9 @@ class Cat(pygame.sprite.Sprite):
             "up": [], "up_idle": [],
             "down": [], "down_idle": [],
             "left": [], "left_idle": [],
-            "right": [], "right_idle": []
+            "right": [], "right_idle": [],
+            "sleep1": [], "sleep2": [],
+            "stretch": []
         }
         # 导入动画资源
         self.import_assets(image_base_path)
@@ -45,16 +56,38 @@ class Cat(pygame.sprite.Sprite):
         self.image = self.animations[self.status][0]
         self.rect = self.image.get_rect(center=pos)
 
+        # 碰撞检测矩形
+        self.hitbox = self.rect.copy().inflate((-20, -20))  
+
         # Behavior 
         self.actions = LinkedTaskQueue()
 
         # 动作状态
         self.is_resting = False
+
+
+        self.is_sleeping = False
+        self.sleep_timer = 0
+        self.sleep_duration = 0
+
         self.rest_duration = 0  # 总休息时间
         self.rest_timer = 0  # 已休息时间
         self.dierction = pygame.math.Vector2()
         self.speed = 300  # 新增速度属性
+
+    @property
+    def status(self):
+        return self._status
     
+    @status.setter
+    def status(self, new_status):
+        self._status = new_status
+        self._update_animation()
+
+    def _update_animation(self):
+        ''' 更新动画 '''
+        self._animation
+
     #
     # 初始化区
     #
@@ -70,13 +103,18 @@ class Cat(pygame.sprite.Sprite):
                         # 缩放图片
                         image = pygame.transform.scale(image, (self.size["width"], self.size["height"]))
                         self.animations[direction].append(image)
-                print(f"已加载 {direction} 方向的 {len(self.animations[direction])} 张图片")
+                #print(f"已加载 {direction} 方向的 {len(self.animations[direction])} 张图片")
             else:
                 print(f"警告：路径 {folder_path} 不存在")
 
     #
     # 行为控制区
     #
+    def change_status(self, status):
+        """改变状态"""
+        self.status = status
+
+
     def process_current_action(self, dt):
         '''
             通过get_current_task获取队列中的任务,尝试分解并完成任务,
@@ -93,16 +131,21 @@ class Cat(pygame.sprite.Sprite):
         elif action.task_name == "rest":
             self.rest(action.value)
             self.update_rest_status(dt)
+        elif action.task_name == "sleep":
+            # 随机播放其中一种睡觉动画 N秒
+            self.sleep(action.value)
+            self.update_sleeping(dt)
+
         else:
             print(f"未知任务 {action}")
             self.actions.pop_next_task()
+
+        
         
 
 
     def add_action(self, action_type, duration_or_distance):
         """添加新动作"""
-        print("添加新动作")
-        print(action_type)
         self.actions.add_task(action_type, duration_or_distance)
 
 
@@ -128,6 +171,7 @@ class Cat(pygame.sprite.Sprite):
             if abs(delta_x) < move_distance:
                 move_distance = abs(delta_x)
             self.rect.centerx += direction_x * move_distance
+            #self.hitbox.centerx = round(self.pos.x)
 
         elif abs(delta_y) > 0:
             direction_y = 1 if delta_y > 0 else -1  # 向下为正，向上为负
@@ -138,26 +182,38 @@ class Cat(pygame.sprite.Sprite):
             if abs(delta_y) < move_distance:
                 move_distance = abs(delta_y)
             self.rect.centery += direction_y * move_distance
-
-        # 更新动画帧
-        self.frame_index += self.frame_rate * dt
-        if self.frame_index >= len(self.animations[self.status]):
-            self.frame_index = 0
-        self.image = self.animations[self.status][int(self.frame_index)]
+            #self.hitbox.centery = round(self.pos.y)
 
         # 检查是否到达目标点
         if self.rect.center == target_point:
-            print(f"已到达目标位置 {target_point}")
+            #print(f"已到达目标位置 {target_point}")
             self.dierction = pygame.math.Vector2()  # 停止移动
             self.status = "down_idle"  # 回到待机状态
             self.actions.pop_next_task()  # 完成任务
 
+    def sleep(self, duration):
+        """Randomly select a sleeping animation and sleep for a given duration."""
+        if not self.is_sleeping:
+            self.is_sleeping = True
+            self.status = random.choice(["sleep1", "sleep2"])
+            self.frame_index = 0
+            self.sleep_timer = 0
+            self.sleep_duration = duration
 
 
+    def update_sleeping(self, dt):
+        """Update sleep timer and play sleeping animation."""
+        if self.is_sleeping:
+            self.sleep_timer += dt
+            self.frame_index += self.frame_rate * dt
+            if self.frame_index >= len(self.animations[self.status]):
+                self.frame_index = 0
+            self.image = self.animations[self.status][int(self.frame_index)]
 
-
-
-        
+            if self.sleep_timer >= self.sleep_duration:
+                self.is_sleeping = False
+                self.status = "down_idle"
+                self.actions.pop_next_task()    
 
     
     def rest(self, duration):
@@ -175,7 +231,7 @@ class Cat(pygame.sprite.Sprite):
             # 更新动画帧，保持待机动画播放
             self.animate(dt)
             if self.rest_timer >= self.rest_duration:
-                print(f"休息了 {self.rest_duration} 秒，任务完成")
+                #print(f"休息了 {self.rest_duration} 秒，任务完成")
                 self.is_resting = False  # 结束休息
                 self.rest_timer = 0
                 self.actions.pop_next_task()  # 完成休息任务    
@@ -195,7 +251,6 @@ class Cat(pygame.sprite.Sprite):
     def animate(self, dt):
         """更新动画帧"""
         self.frame_index += self.frame_rate * dt
-        # 如果frame超过了某个正在执行的动画的长度，重置frame
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
         self.image = self.animations[self.status][int(self.frame_index)]
@@ -206,5 +261,5 @@ class Cat(pygame.sprite.Sprite):
     #
     def update(self, dt):
         """更新动画和位置"""
-        self.animate(dt)
         self.process_current_action(dt)
+        self.animate(dt)

@@ -8,6 +8,11 @@
     "size": {
       "width": 128,
       "height": 128
-    }
+    },
+    "hunger" : 70,
+    "energy" : 80,
+    "hunger_rate" : 0.11,
+    "energy_rate" : 1,
+    "energy_recovery_rate" : 5
   }
   

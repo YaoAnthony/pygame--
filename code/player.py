@@ -14,6 +14,15 @@ class Player(pygame.sprite.Sprite):
         self.target_pos = pygame.Vector2(pos)
         self.speed = 3000  # 设置每秒移动速度
 
+        # inventory
+        self.item_inventory = {
+            "item1": 0,
+            "item2": 0,
+            "item3": 0,
+            "item4": 0,
+            "item5": 0,
+        }
+
     def update(self, dt):
         """每帧更新位置，进行平滑移动"""
         current_pos = pygame.Vector2(self.rect.center)

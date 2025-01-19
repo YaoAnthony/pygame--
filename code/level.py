@@ -4,6 +4,7 @@ from code.player import Player
 from code.overlay import Overlay
 
 from code.Sprites import Generic
+from code.BackgroundMusicPlayer import BackgroundMusicPlayer
 
 # Cat
 from code.Cat_factory import CatFactory
@@ -17,6 +18,8 @@ class Level:
         # Sprite groups 用于绘画各种东西
         self.all_sprites = CameraGroup()
 
+        # 背景音乐加载
+        self.music_player = BackgroundMusicPlayer()
         
         self.setup()
         
@@ -26,6 +29,9 @@ class Level:
 
     def setup(self):
         
+        # 启动背景音乐播放器
+        self.music_player.start()
+
         # 猫咪工厂加载！
         self.cat_factory = CatFactory()
 
@@ -33,6 +39,7 @@ class Level:
         
         # 创建不同的猫咪对象
         self.qiuqiu = self.cat_factory.create_cat("qiuqiu", (200, 200), self.all_sprites)
+        self.momo = self.cat_factory.create_cat("momo", (300, 200), self.all_sprites)
         self.mila = self.cat_factory.create_cat("qiuqiu", (400, 200), self.all_sprites)
 
         Generic(
@@ -68,7 +75,6 @@ class Level:
             mouse_pos = event.pos
             self.player.move_to(mouse_pos)
     
-    
 
         
 
@@ -81,8 +87,13 @@ class Level:
         self.mila.add_action("rest", 2)  # 向右移动 500 像素
         self.mila.add_action("rest", 1)  # 休息 2 秒
         self.mila.add_action("move", (200,100))  # 向下移动 200 像素
-        self.mila.add_action("rest", 1)  # 休息 2 秒
+        self.mila.add_action("sleep", 5)  # 休息 2 秒
         self.mila.add_action("move", (1500,275))  # 向下移动 200 像素
+
+        self.momo.add_action("rest", 1)  # 向右移动 500 像素
+        self.momo.add_action("move", (1000,100))  # 向下移动 200 像素
+        self.momo.add_action("rest", 2)  # 休息 2 秒
+        self.momo.add_action("move", (1400,295))  # 向下移动 200 像素
 
 
 class CameraGroup(pygame.sprite.Group):

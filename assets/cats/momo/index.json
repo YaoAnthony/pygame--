@@ -1,0 +1,18 @@
+{
+    "name": "球球",
+    "breed": "英短",
+    "description": "温顺可爱的小布偶猫，喜欢晒太阳。",
+    "age": 7,
+    "frame_rate": 2,
+    "speed": 500,
+    "size": {
+      "width": 128,
+      "height": 128
+    },
+    "hunger" : 50,
+    "energy" : 80,
+    "hunger_rate" : 0.11,
+    "energy_rate" : 1,
+    "energy_recovery_rate" : 5
+  }
+  

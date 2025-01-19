@@ -14,7 +14,7 @@ class UIManager:
         screen_width, screen_height = self.screen.get_size()
 
         # 绘制主标题
-        title_text = self.title_font.render("挂机游戏主菜单", True, (0, 0, 0))
+        title_text = self.title_font.render("猫咪咖啡馆", True, (0, 0, 0))
         title_rect = title_text.get_rect(center=(screen_width // 2, screen_height // 4))
         self.screen.blit(title_text, title_rect)
 
