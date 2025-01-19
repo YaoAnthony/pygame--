@@ -49,16 +49,13 @@ class CatAnimation:
             else:
                 print(f"警告：路径 {folder_path} 不存在")
 
-    def set_status(self, status):
+    def set_frame(self, index):
         """
-        设置当前状态
-        :param status: 动画状态名称
+        设置当前帧索引
+        :param index: 帧索引
         """
-        if status in self.animations:
-            self.current_status = status
-            self.frame_index = 0  # 切换状态时重置帧索引
-        else:
-            print(f"错误：未知状态 '{status}'")
+        self.frame_index = index
+
 
     def update(self, dt):
         """
@@ -66,7 +63,7 @@ class CatAnimation:
         :param dt: 帧时间间隔
         """
         self.frame_index += self.frame_rate * dt
-        if self.frame_index >= len(self.animations[self.current_status]):
+        if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0  # 重置帧索引
 
     def get_current_frame(self):
@@ -74,8 +71,9 @@ class CatAnimation:
         获取当前帧图像
         :return: 当前帧的图像
         """
-        if self.animations[self.current_status]:
-            return self.animations[self.current_status][int(self.frame_index)]
+        if self.animations[self.status]:
+            return self.animations[self.status][int(self.frame_index)]
         else:
-            print(f"警告：状态 '{self.current_status}' 没有加载动画帧")
+            print(f"警告：状态 '{self.status}' 没有加载动画帧")
             return None
+    

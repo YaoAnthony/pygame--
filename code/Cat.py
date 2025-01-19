@@ -36,7 +36,7 @@ class Cat(pygame.sprite.Sprite):
         self.frame_index = 0
         self._status = "down_idle"
 
-        self._animation = CatAnimation(image_base_path, self.size, self.frame_rate)
+        self._animation = CatAnimation(self, image_base_path, self.size, self.frame_rate)
 
         self.z = LAYERS["main"]
         # Default Settings
@@ -82,11 +82,7 @@ class Cat(pygame.sprite.Sprite):
     @status.setter
     def status(self, new_status):
         self._status = new_status
-        self._update_animation()
-
-    def _update_animation(self):
-        ''' 更新动画 '''
-        self._animation
+        self._animation.set_frame(0)
 
     #
     # 初始化区
@@ -110,9 +106,6 @@ class Cat(pygame.sprite.Sprite):
     #
     # 行为控制区
     #
-    def change_status(self, status):
-        """改变状态"""
-        self.status = status
 
 
     def process_current_action(self, dt):
@@ -228,8 +221,6 @@ class Cat(pygame.sprite.Sprite):
         """更新休息状态"""
         if self.is_resting:
             self.rest_timer += dt  # 累计时间
-            # 更新动画帧，保持待机动画播放
-            self.animate(dt)
             if self.rest_timer >= self.rest_duration:
                 #print(f"休息了 {self.rest_duration} 秒，任务完成")
                 self.is_resting = False  # 结束休息
@@ -250,10 +241,12 @@ class Cat(pygame.sprite.Sprite):
     #
     def animate(self, dt):
         """更新动画帧"""
-        self.frame_index += self.frame_rate * dt
-        if self.frame_index >= len(self.animations[self.status]):
-            self.frame_index = 0
-        self.image = self.animations[self.status][int(self.frame_index)]
+        self._animation.update(dt)
+        self.image = self._animation.get_current_frame()
+        # self.frame_index += self.frame_rate * dt
+        # if self.frame_index >= len(self.animations[self.status]):
+        #     self.frame_index = 0
+        # self.image = self.animations[self.status][int(self.frame_index)]
 
 
     # 
