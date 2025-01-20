@@ -24,6 +24,7 @@ class CatAnimation:
         }
         self.frame_rate = frame_rate
         self.frame_index = 0
+        print("init")
         #self.status = "down_idle"  # 默认状态
 
         # 加载所有动画资源
@@ -62,7 +63,10 @@ class CatAnimation:
         更新动画帧
         :param dt: 帧时间间隔
         """
+
+        #print(f"old frame_index: {self.frame_index} =")
         self.frame_index += self.frame_rate * dt
+        #print(f"{self.frame_index} + {self.frame_rate * dt} ({self.frame_rate} * dt: {dt})")
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0  # 重置帧索引
 
@@ -71,6 +75,7 @@ class CatAnimation:
         获取当前帧图像
         :return: 当前帧的图像
         """
+        
         if self.animations[self.status]:
             return self.animations[self.status][int(self.frame_index)]
         else:

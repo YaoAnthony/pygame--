@@ -33,27 +33,15 @@ class Cat(pygame.sprite.Sprite):
 
         self.size = cat_info.get("size", {"width": 64, "height": 64})  # 默认 64x64 尺寸
         self.frame_rate = cat_info.get("frame_rate", 2)  # 每帧间隔时间
-        self.frame_index = 0
         self._status = "down_idle"
 
         self._animation = CatAnimation(self, image_base_path, self.size, self.frame_rate)
 
         self.z = LAYERS["main"]
         # Default Settings
-        
-        self.animations = {
-            "up": [], "up_idle": [],
-            "down": [], "down_idle": [],
-            "left": [], "left_idle": [],
-            "right": [], "right_idle": [],
-            "sleep1": [], "sleep2": [],
-            "stretch": []
-        }
-        # 导入动画资源
-        self.import_assets(image_base_path)
 
         # 设置初始图片
-        self.image = self.animations[self.status][0]
+        self.image = self._animation.get_current_frame()
         self.rect = self.image.get_rect(center=pos)
 
         # 碰撞检测矩形
@@ -81,27 +69,10 @@ class Cat(pygame.sprite.Sprite):
     
     @status.setter
     def status(self, new_status):
-        self._status = new_status
-        self._animation.set_frame(0)
+        if self._status != new_status:  # 仅在状态改变时重置帧索引
+            self._status = new_status
+            self._animation.set_frame(0)  # 重置帧索引
 
-    #
-    # 初始化区
-    #
-    def import_assets(self, image_base_path):
-        """导入图片资源"""
-        for direction in self.animations.keys():
-            folder_path = os.path.join(image_base_path, direction)
-            if os.path.exists(folder_path):
-                for file_name in sorted(os.listdir(folder_path)):
-                    if file_name.endswith(('.png', '.jpg')):
-                        image_path = os.path.join(folder_path, file_name)
-                        image = pygame.image.load(image_path).convert_alpha()
-                        # 缩放图片
-                        image = pygame.transform.scale(image, (self.size["width"], self.size["height"]))
-                        self.animations[direction].append(image)
-                #print(f"已加载 {direction} 方向的 {len(self.animations[direction])} 张图片")
-            else:
-                print(f"警告：路径 {folder_path} 不存在")
 
     #
     # 行为控制区
@@ -132,9 +103,6 @@ class Cat(pygame.sprite.Sprite):
         else:
             print(f"未知任务 {action}")
             self.actions.pop_next_task()
-
-        
-        
 
 
     def add_action(self, action_type, duration_or_distance):
@@ -189,7 +157,6 @@ class Cat(pygame.sprite.Sprite):
         if not self.is_sleeping:
             self.is_sleeping = True
             self.status = random.choice(["sleep1", "sleep2"])
-            self.frame_index = 0
             self.sleep_timer = 0
             self.sleep_duration = duration
 
@@ -198,10 +165,6 @@ class Cat(pygame.sprite.Sprite):
         """Update sleep timer and play sleeping animation."""
         if self.is_sleeping:
             self.sleep_timer += dt
-            self.frame_index += self.frame_rate * dt
-            if self.frame_index >= len(self.animations[self.status]):
-                self.frame_index = 0
-            self.image = self.animations[self.status][int(self.frame_index)]
 
             if self.sleep_timer >= self.sleep_duration:
                 self.is_sleeping = False
@@ -236,23 +199,14 @@ class Cat(pygame.sprite.Sprite):
         pass
 
 
-    #
-    # 动画控制区
-    #
-    def animate(self, dt):
-        """更新动画帧"""
-        self._animation.update(dt)
-        self.image = self._animation.get_current_frame()
-        # self.frame_index += self.frame_rate * dt
-        # if self.frame_index >= len(self.animations[self.status]):
-        #     self.frame_index = 0
-        # self.image = self.animations[self.status][int(self.frame_index)]
-
-
     # 
     # 更新区
     #
     def update(self, dt):
         """更新动画和位置"""
         self.process_current_action(dt)
-        self.animate(dt)
+
+
+        # 更新动画
+        self._animation.update(dt)
+        self.image = self._animation.get_current_frame()

@@ -48,10 +48,6 @@ class Game:
         self.clock = pygame.time.Clock()
 
         self.ui_manager = UIManager(self.screen)  # 实例化 UIManager
-        
-
-        #Level
-        self.level = Level()
 
         self.running = True
     
@@ -81,6 +77,10 @@ class Game:
     
     def run(self):
         self.show_start_screen()  # 显示主菜单
+
+        #Level
+        self.level = Level()
+        
         while self.running:
             # delta time
             dt = self.clock.tick(60) / 1000
