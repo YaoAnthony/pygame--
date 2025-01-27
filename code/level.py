@@ -58,18 +58,18 @@ class Level:
             self.save_progress()  # 自动保存新存档
         else:
             print(f"加载存档 {self.save_id}...")
-        game_state = load_game(self.save_id)
-        if game_state:
-            self.days_played = game_state['days_played']
-            self.current_time = game_state['current_time']
-            self.current_weather = game_state['current_weather']
-            self.player_money = game_state['player_money']
-            self.inventory = game_state['inventory']
-            self.store = game_state['store']
-            self.cats = game_state['cats']
-        else:
-            print(f"存档 {self.save_id} 不存在，创建新存档...")
-            self.save_progress()
+            game_state = load_game(self.save_id)
+            if game_state:
+                self.days_played = game_state['days_played']
+                self.current_time = game_state['current_time']
+                self.current_weather = game_state['current_weather']
+                self.player_money = game_state['player_money']
+                self.inventory = game_state['inventory']
+                self.store = game_state['store']
+                self.cats = game_state['cats']
+            else:
+                print(f"存档 {self.save_id} 不存在，创建新存档...")
+                self.save_progress()
         
         
         # 启动背景音乐播放器
@@ -77,19 +77,18 @@ class Level:
 
         # 猫咪工厂加载！
         self.cat_factory = CatFactory()
+        self.cat_references = {}
         
         # 创建不同的猫咪对象
         for cat in self.cats:
-            self.cat_factory.create_cat(cat['name'], (200, 100), self.all_sprites)
+            new_cat = self.cat_factory.create_cat(cat['name'], (200, 100), self.all_sprites)
+            self.cat_references[cat['name']] = new_cat  # 存储引用
 
-        #self.qiuqiu = self.cat_factory.create_cat("qiuqiu", (200, 100), self.all_sprites)
-        #self.momo = self.cat_factory.create_cat("momo", (300, 200), self.all_sprites)
-        #self.mila = self.cat_factory.create_cat("qiuqiu", (400, 200), self.all_sprites)
 
         Generic(
             pos = (0,0),
-            surf = pygame.image.load("assets/backgrounds/ground.png").convert_alpha(),
             groups=self.all_sprites,
+            #surf = pygame.image.load("assets/backgrounds/ground.png").convert_alpha(),
             z=LAYERS['background']
         )
 
@@ -127,26 +126,21 @@ class Level:
             #     self.player.move_to(mouse_pos)  # 玩家移动到鼠标位置
 
     
- 
+    def add_cat_action(self, cat_name, action, *args):
+        if cat_name in self.cat_references:
+            cat = self.cat_references[cat_name]
+            cat.add_action(action, *args)
+            print(f"为猫咪 {cat_name} 添加动作 {action}，参数: {args}")
+        else:
+            print(f"未找到名字为 {cat_name} 的猫咪！")
+
         
 
     def addAction(self):
         # 添加行为链
-        self.qiuqiu.add_action("rest", 1)  # 休息 2 秒
-        self.qiuqiu.add_action("move", (1300,50))  # 向右移动 500 像素
-        self.qiuqiu.add_action("rest", 5)  # 休息 2 秒
-        self.qiuqiu.add_action("move", (500,100))  # 向下移动 200 像素
+        self.add_cat_action("qiuqiu", "move", (500, 300))
+        self.add_cat_action("qiuqiu", "rest", 2)
 
-        # self.mila.add_action("rest", 2)  # 向右移动 500 像素
-        # self.mila.add_action("rest", 1)  # 休息 2 秒
-        # self.mila.add_action("move", (200,100))  # 向下移动 200 像素
-        # self.mila.add_action("sleep", 5)  # 休息 2 秒
-        # self.mila.add_action("move", (1500,275))  # 向下移动 200 像素
-
-        # self.momo.add_action("rest", 1)  # 向右移动 500 像素
-        # self.momo.add_action("move", (1000,100))  # 向下移动 200 像素
-        # self.momo.add_action("rest", 2)  # 休息 2 秒
-        # self.momo.add_action("move", (1400,295))  # 向下移动 200 像素
 
 
 class CameraGroup(pygame.sprite.Group):
