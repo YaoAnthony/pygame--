@@ -3,8 +3,10 @@ import random
 import os
 from code.LinkedTaskQueue import LinkedTaskQueue
 from code.settings import *
-from code.support import *
 from code.CatAnimation import CatAnimation
+
+#ai
+from code.CatAI import CatAI
 
 class Cat(pygame.sprite.Sprite):
     '''
@@ -62,6 +64,9 @@ class Cat(pygame.sprite.Sprite):
         self.rest_timer = 0  # 已休息时间
         self.dierction = pygame.math.Vector2()
         self.speed = 300  # 新增速度属性
+
+        self.ai = CatAI(self, grid_size=(10, 10), area_bounds=((64, 64), (1000, 480)))
+
 
     @property
     def status(self):
@@ -205,6 +210,7 @@ class Cat(pygame.sprite.Sprite):
     def update(self, dt):
         """更新动画和位置"""
         self.process_current_action(dt)
+        self.ai.move_cat()  # 让 AI 决定下一步行动
 
 
         # 更新动画

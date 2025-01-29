@@ -92,7 +92,7 @@ class Level:
             z=LAYERS['background']
         )
 
-        self.addAction()
+        #self.addAction()
     
     def save_progress(self):
         self.save_id = save_game(

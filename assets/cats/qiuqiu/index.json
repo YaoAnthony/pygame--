@@ -6,8 +6,8 @@
     "frame_rate": 2,
     "speed": 500,
     "size": {
-      "width": 128,
-      "height": 128
+      "width": 64,
+      "height": 64
     },
     "hunger" : 70,
     "energy" : 80,
